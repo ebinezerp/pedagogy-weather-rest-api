@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import pedagogy.restapi.exceptions.DateFormatException;
 import pedagogy.restapi.model.Weather;
 import pedagogy.restapi.service.WeatherService;
+import pedagogy.restapi.util.FormDate;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -25,7 +27,10 @@ public class WeatherController {
 	@Autowired
 	private WeatherService weatherService;
 
-	@GetMapping("/{condition}")
+	@Autowired
+	private FormDate formDate;
+
+	@GetMapping("/condition/{condition}")
 	public ResponseEntity<List<Weather>> getWeatherByCondition(
 			@PathVariable("condition") String condition) {
 		return new ResponseEntity<List<Weather>>(weatherService.getWeather(condition),
@@ -39,15 +44,13 @@ public class WeatherController {
 				weatherService.getWeatherByMonthAndYear(month, year), HttpStatus.OK);
 	}
 
-	@GetMapping("/{date}")
+	@GetMapping("/date/{date}")
 	public ResponseEntity<Weather> getWeatherByDate(@PathVariable("date") String date) {
 		try {
-			Date formatedDate = new SimpleDateFormat("yyyyMMdd-hh:mm").parse(date);
-			return new ResponseEntity<Weather>(weatherService.getWeatherByDate(formatedDate),
-					HttpStatus.OK);
+			return new ResponseEntity<Weather>(
+					weatherService.getWeatherByDate(formDate.parse(date)), HttpStatus.OK);
 		} catch (ParseException e) {
-			e.printStackTrace();
-			return null;
+			throw new DateFormatException(date);
 		}
 
 	}
