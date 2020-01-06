@@ -1,0 +1,49 @@
+package pedagogy.restapi;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import pedagogy.restapi.model.Weather;
+import pedagogy.restapi.repository.WeatherRepository;
+import pedagogy.restapi.service.WeatherService;
+
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+public class WeatherServiceTest {
+
+	@Mock
+	private WeatherRepository weatherRepository;
+
+	@InjectMocks
+	private WeatherService weatherService;
+
+	@Test
+	public void testGetWeatherByDate() throws ParseException {
+
+		Date date = new SimpleDateFormat("yyyyMMdd-hh:mm").parse("20100105-00:00");
+
+		when(weatherRepository.findByDatetimeUTC(date)).thenReturn(new Weather(date, 0, 1));
+		Weather weather = weatherService.getWeatherByDate(date);
+		System.out.println(weather.getDatetime_utc().getYear()+1900);
+		assertEquals(2010, weather.getDatetime_utc().getYear()+1900);
+		assertEquals(05, weather.getDatetime_utc().getDate());
+		assertEquals(1, weather.getRain());
+
+		verify(weatherRepository, times(1)).findByDatetimeUTC(date);
+
+	}
+
+}
